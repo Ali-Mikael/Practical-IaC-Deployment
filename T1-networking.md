@@ -144,18 +144,17 @@ resource "aws_subnet" "private_subnets" {
 Running `$ terraform apply`, will effectively create you a new VPC `name = main-vpc` (indifferent to default VPC), and by using `aws_vpc.main.id` within your code, always deploy your stuff in this VPC. <br>
 
 ### This also creates:
-- 5 subnets. 1 public and 4 private ones! <br>
-- VPC CIDR = 10.0.0.0/16 <br> 
-- Public subnet = 10.0.1.0/24 <br>
-- Private subnets = 10.0.x.0/24 <br>
+- 5 subnets. 1 public and 4 private ones!
+- VPC CIDR = `10.0.0.0/16`
+- Public subnet = `10.0.1.0/24`
+- Private subnets = `10.0.x.0/24`
 - An internet gateway (associated)
 - A NAT gateway with an EIP, associated with the public subnet.
-<br>
+  
 ```
 $ Apply complete! Resources: 11 added, 0 changed, 0 destroyed.
 ```
-<br>
-<br>
+  
 <img width="1133" height="188" alt="Screenshot 2025-10-08 at 15 56 21" src="https://github.com/user-attachments/assets/c40f313e-b9f3-4e8f-9109-39be700d5681" />
 <br>
 <img width="704" height="628" alt="Screenshot 2025-10-08 at 16 10 22" src="https://github.com/user-attachments/assets/b471f3ee-9e5f-46c2-90b5-ebc39d23cbba" />

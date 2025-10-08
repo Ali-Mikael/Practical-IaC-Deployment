@@ -1,9 +1,29 @@
 # Task 1: Networking && Task 9: NAT GW
 
-### Terraform code
+# Terraform code
+
+### providers.tf
+/terraform/providers.tf
+<br>
 ```
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 6.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = "us-east-1"
+}
+```
+
+### variables.tf
 /terraform/variables.tf 
->>
+<br>
+```
 variable "main_cidr" {
   type    = string
   default = "10.0.0.0/16"
@@ -42,9 +62,13 @@ variable "private_subnets" {
   }
 }
 
+```
 
+### main.tf
+/terraform/main.tf 
+<br>
+```
 
-/terraform/main.tf
 # Networking
 resource "aws_vpc" "main" {
   cidr_block       = var.main_cidr

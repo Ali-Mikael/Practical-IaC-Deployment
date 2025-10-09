@@ -6,7 +6,7 @@
 
 /terraform/providers.tf    
 
-```
+```hcl
 terraform {
   required_providers {
     aws = {

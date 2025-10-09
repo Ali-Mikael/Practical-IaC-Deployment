@@ -3,8 +3,9 @@
 # Terraform code
 
 ### providers.tf
-/terraform/providers.tf
-<br>
+
+/terraform/providers.tf    
+
 ```
 terraform {
   required_providers {
@@ -21,8 +22,8 @@ provider "aws" {
 ```
 
 ### variables.tf
-/terraform/variables.tf 
-<br>
+
+/terraform/variables.tf    
 ```
 variable "main_cidr" {
   type    = string
@@ -65,8 +66,8 @@ variable "private_subnets" {
 ```
 
 ### main.tf
-/terraform/main.tf 
-<br>
+
+/terraform/main.tf     
 ```
 
 # Networking
@@ -141,9 +142,10 @@ resource "aws_subnet" "private_subnets" {
 ```
 <br>
 
-Running `$ terraform apply`, will effectively create you a new VPC `name = main-vpc` (indifferent to default VPC), and by using `aws_vpc.main.id` within your code, always deploy your stuff in this VPC. <br>
+Running `$ terraform apply`, will effectively create you a new VPC `name = main-vpc` (indifferent to default VPC), and by using `aws_vpc.main.id` within your code, always deploy your stuff in this VPC.     
 
 ### This also creates:
+
 - 5 subnets. 1 public and 4 private ones!
 - VPC CIDR = `10.0.0.0/16`
 - Public subnet = `10.0.1.0/24`

@@ -1,5 +1,4 @@
 
-```hcl
 # Networking
 resource "aws_vpc" "main" {
   cidr_block       = var.main_cidr
@@ -69,4 +68,3 @@ resource "aws_subnet" "private_subnets" {
     Name = each.value.name
   }
 }
-```

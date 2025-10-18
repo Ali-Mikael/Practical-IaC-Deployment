@@ -16,9 +16,7 @@ variable "public_subnets" {
   }
 }
 
-
 variable "private_subnets" {
-
   description = "Private subnet config"
   type = map(object({
     name = string
@@ -35,5 +33,3 @@ variable "private_subnets" {
     datasubnet2 = { name = "data-subnet-private2", az = "us-east-1f", cidr = "10.0.10.0/24" }
   }
 }
-
-

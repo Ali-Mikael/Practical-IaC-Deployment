@@ -1,8 +1,10 @@
+# Main cidr_block for the VPC
 variable "main_cidr" {
   type    = string
   default = "10.0.0.0/16"
 }
 
+# Use for creating subnets
 variable "public_subnets" {
   description = "Public subnet config"
   type = map(object({
@@ -32,4 +34,20 @@ variable "private_subnets" {
     datasubnet1 = { name = "data-subnet-private1", az = "us-east-1a", cidr = "10.0.9.0/24" },
     datasubnet2 = { name = "data-subnet-private2", az = "us-east-1f", cidr = "10.0.10.0/24" }
   }
+}
+
+
+variable "ami_id" {
+  description = "Ubuntu AMI for instances"
+  default = data.aws_ami.ubuntu.id
+}
+
+variable "instance_type" {
+  default = "t2.micro"
+}
+
+variable "key_name" {
+  type = string
+  description = "SSH key name"
+  default = "bh-key"
 }

@@ -13,9 +13,9 @@ Creating new key-pair locally for my instance:
 $ ssh-keygen -t ed25519 -C ali.g@bastion
 ```
   
-<img width="473" height="72" alt="Screenshot 2025-10-20 at 23 20 46" src="https://github.com/user-attachments/assets/44182ecc-1e79-40d5-aa2f-1f1a857cb957" />   
+<img width="473" height="72" alt="Screenshot 2025-10-20 at 23 20 46" src="https://github.com/user-attachments/assets/44182ecc-1e79-40d5-aa2f-1f1a857cb957" /> <br> 
 **Now we can reference it in our code!**   
-<img width="606" height="147" alt="Screenshot 2025-10-20 at 23 22 15" src="https://github.com/user-attachments/assets/9244144b-e44b-48bb-a3c4-e12d3ccddf83" />   
+<img width="606" height="147" alt="Screenshot 2025-10-20 at 23 22 15" src="https://github.com/user-attachments/assets/9244144b-e44b-48bb-a3c4-e12d3ccddf83" />  <br> 
 
 Creating linux VM, assigning it to public subnet and associating SG   
 

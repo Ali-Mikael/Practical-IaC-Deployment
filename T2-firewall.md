@@ -69,7 +69,6 @@ resource "aws_network_acl_association" "private" {
 }
 ```
 This Terraform code creates NACLs and their rules *dynamically*, using values derived from `locals.tf`, and then associates them (the NACLs) with correct subnets, building on information from previous configurations in `networking.tf`.  
-Lists/rules might (with some certainty) change in the final deployment, but we got some very could practice here!  
 You might want to check out the `/terraform` folder to see how this all plays together!  
 
 Cheerio!

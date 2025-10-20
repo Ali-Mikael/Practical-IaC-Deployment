@@ -51,8 +51,8 @@ locals {
 ```hcl
 # File: /terraform/variables.tf
 variable "ami_id" {
-  description = "Default Ubuntu AMI to use with instances"
-  default = "ami-0360c520857e3138f"
+  description = "Ubuntu AMI for instances"
+  default = data.aws_ami.ubuntu.id
 }
 
 variable "instance_type" {
@@ -65,7 +65,21 @@ variable "key_name" {
   default = "bh-key"
 }
 ```
-Note: If you want to check out the security group. Go through `/locals.tf` section: security_groups{} and then navigate to `/security.tf`   
+Getting the latest battle tested ubuntu image for our instance automatically using the data block, and then referencing it in our variable, so that if we want we can overide this default.
+```hcl
+# File: /terraform/data.tf
+data "aws_ami" "ubuntu" {
+  most_recent = true
+  owners      = ["099720109477"] # Canonical
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
+  }
+}
+```
+Note: If you want to check out the security groups configurations. Go through `/locals.tf` section: **security_groups{}**.   
+After that you can examine `/security.tf`   
 But anyway lets crack on.   
 
 Because of the following section in our public subnet configuration:

@@ -79,7 +79,7 @@ resource "aws_security_group" "sg" {
 # -----------------------------------------
 resource "aws_vpc_security_group_ingress_rule" "ingress_rule" {
   # Check locals.tf for flattening of rules 
-  for_each = { 
+  for_each = {
     for rule in local.sg_rules_flattened : "${rule.sg_name}-${rule.direction}-${rule.from_port}" => rule
     if rule.direction == "ingress"
   }
@@ -94,14 +94,15 @@ resource "aws_vpc_security_group_ingress_rule" "ingress_rule" {
 
 resource "aws_vpc_security_group_egress_rule" "egress_rule" {
   # Check locals.tf for flattening of rules 
-  for_each = { 
+  for_each = {
     for rule in local.sg_rules_flattened : "${rule.sg_name}-${rule.direction}-${rule.from_port}" => rule
     if rule.direction == "egress"
   }
 
   security_group_id = aws_security_group.sg[each.value.sg_name].id
-  from_port         = each.value.from_port
-  to_port           = each.value.to_port
+  # If all protocols are specified, you cannot declare ports per AWS rules
+  from_port         = each.value.ip_protocol == "-1" ? null : each.value.from_port
+  to_port           = each.value.ip_protocol == "-1" ? null : each.value.to_port
   ip_protocol       = each.value.ip_protocol
   cidr_ipv4         = each.value.cidr_ipv4
   depends_on        = [aws_security_group.sg]

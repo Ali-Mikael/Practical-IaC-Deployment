@@ -10,6 +10,7 @@ locals {
   }
 }
 
+
 # NACL rules
 # ----------
 locals {
@@ -22,7 +23,7 @@ locals {
         { rule_no = 120, description = "Allow SSH into public subnet", protocol = "tcp", rule_action = "allow", cidr_block = "0.0.0.0/0", from_port = local.port.ssh, to_port = local.port.ssh }
       ]
       egress = [
-        { rule_no = 100, description = "Allow all outbound", protocol = "-1", rule_action = "allow", cidr_block = var.main_cidr, from_port = 0, to_port = 0 }
+        { rule_no = 100, description = "Allow all outbound", protocol = "-1", rule_action = "allow", cidr_block = "0.0.0.0/0", from_port = 0, to_port = 0 }
       ]
     }
     # Private subnets NACL rules

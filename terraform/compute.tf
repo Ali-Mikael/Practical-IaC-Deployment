@@ -2,7 +2,7 @@
 # ---------
 
 resource "aws_instance" "bastion_host" {
-  ami           = var.ami_id
+  ami           = data.aws_ami.ubuntu.id
   instance_type = var.instance_type
   subnet_id     = aws_subnet.public_subnets["main"].id
   key_name      = aws_key_pair.bastion_host.key_name

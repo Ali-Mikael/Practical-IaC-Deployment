@@ -1,3 +1,9 @@
+# Region
+variable "aws_region" {
+  type = string
+  default = "us-east-1"
+}
+
 # Main cidr_block for the VPC
 variable "main_cidr" {
   type    = string
@@ -36,11 +42,6 @@ variable "private_subnets" {
   }
 }
 
-
-variable "ami_id" {
-  description = "Ubuntu AMI for instances"
-  default = data.aws_ami.ubuntu.id
-}
 
 variable "instance_type" {
   default = "t2.micro"

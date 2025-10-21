@@ -16,8 +16,8 @@ $ ssh-keygen -t ed25519 -C ali.g@bastion
 <img width="473" height="72" alt="Screenshot 2025-10-20 at 23 20 46" src="https://github.com/user-attachments/assets/44182ecc-1e79-40d5-aa2f-1f1a857cb957" /> <br> 
 **Now we can reference it in our code!**   
 <img width="606" height="147" alt="Screenshot 2025-10-20 at 23 22 15" src="https://github.com/user-attachments/assets/9244144b-e44b-48bb-a3c4-e12d3ccddf83" />  <br> 
-
-Creating linux VM, assigning it to public subnet and associating SG   
+(Variables cannot contain expressions, so we're storing the value in locals)  
+### Creating linux VM, assigning it to public subnet & associating SG   
 
 ```hcl
 # File: /terraform/compute.tf
@@ -87,6 +87,22 @@ Because of the following section in our public subnet configuration:
 map_public_ip_on_launch = true
 ```
 We don't have to manually configure a public IPv4-address, we simply assign the VM to the public subnet and we're good to go!   
+### As far as tagging goes:
+We have a default tags section in our `providers.tf` that looks like this:
+```hcl
+provider "aws" {
+  region = var.aws_region
+  
+  default_tags {
+    tags = {
+      Project   = "CI/CD-platform"
+      Creator   = "Ali-G"
+      ManagedBy = "Terraform"
+    }
+  }
+}
+```
+So this automatically applies tags to all created resources (except a few, like inatances in ASG)   
 
 ### Logging in
 

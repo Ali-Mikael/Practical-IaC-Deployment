@@ -8,7 +8,7 @@
 - SSH to VM
 - Read VM metadata with curl on VM and inlude screenshot to task README.txt
   
-Creating new key-pair locally for my instance:  
+# Creating new key-pair locally for my instance
 ```
 $ ssh-keygen -t ed25519 -C ali.g@bastion
 ```
@@ -60,7 +60,7 @@ variable "key_name" {
   default = "bh-key"
 }
 ```
-Getting the latest battle tested ubuntu image for our instance automatically using the data block, and then referencing it in our variable, so that if we want we can overide this default.
+Getting the latest battle tested `Ubuntu` image for our instance automatically using the data block.
 ```hcl
 # File: /terraform/data.tf
 data "aws_ami" "ubuntu" {
@@ -99,5 +99,79 @@ provider "aws" {
 ```
 So this automatically applies tags to all created resources (except a few, like inatances in ASG)   
 
-### Logging in
+#### Routing
+In order to have internet access from our subnets, we have to point all internet bound traffic to our internet-gw (if from private subnet, it has to go through the NAT gw first).  
+Building upon our previous network configurations:
+```hcl
+# File: /terraform/networking.tf
+
+# Routing
+# -------
+
+# rt for public subnets
+resource "aws_route_table" "public_subnet_rt" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw.id
+  }
+
+  tags = {
+    Name = "public-subnet-rt"
+  }
+}
+resource "aws_route_table_association" "public_subnet" {
+  for_each = aws_subnet.public_subnets
+
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.public_subnet_rt.id
+}
+
+# rt for private subnets 
+resource "aws_route_table" "private_subnet_rt" {
+  vpc_id = aws_vpc.main.id
+
+  # Internet bound traffic through the nat gw
+  route {
+    cidr_block = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat_gw.id
+  }
+
+  tags = {
+    Name = "private-subnet-rt"
+  }
+} 
+resource "aws_route_table_association" "private_subnet" {
+  for_each = aws_subnet.private_subnets
+
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.private_subnet_rt.id
+}
+```
+
+
+
+## Logging in
+```bash
+$ terraform apply
+```
+<img width="298" height="144" alt="Screenshot 2025-10-21 at 21 18 04" src="https://github.com/user-attachments/assets/37b3def8-8782-41f4-aa74-c855071444a7" /> <br>  
+Because of the output variables we have configured, we get the public ip to our instance, which we can then connect to!   
+First we want to make sure everything looks good.   
+<img width="1372" height="630" alt="Screenshot 2025-10-21 at 21 11 33" src="https://github.com/user-attachments/assets/b994f35a-2218-4aef-90d1-46d3e5c1b8fe" /> <br>   
+
+### Instance details
+<img width="848" height="339" alt="Screenshot 2025-10-21 at 21 21 43" src="https://github.com/user-attachments/assets/4932399c-0d11-4d81-b8e4-d11061c3fca1" /> <br>   
+<img width="1234" height="512" alt="Screenshot 2025-10-21 at 21 22 29" src="https://github.com/user-attachments/assets/d577974b-f5ad-46c4-8724-ff87aa0ba415" /> <br>   
+
+#### Good to go!
+<img width="1029" height="304" alt="Screenshot 2025-10-21 at 21 58 24" src="https://github.com/user-attachments/assets/633c5228-6f3b-450e-9744-eded3f8e5823" /> <br>   
+<img width="848" height="346" alt="Screenshot 2025-10-21 at 22 00 37" src="https://github.com/user-attachments/assets/481d3fca-7589-463f-9e98-b6ecdff7a881" />
+
+
+
+
+
+
 

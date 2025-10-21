@@ -5,8 +5,51 @@ Task goals:
 - Public Subnet firewall: allow 22, 80, 443 from the Internet
 - Private Subnet firewall: allow 22, 80, 443 from Public Subnet   
 
-## security.tf:
+## locals.tf:
+```hcl
+locals {
+  # Port values to be used in NACLs & SGs etc..
+  port = {
+    http            = 80
+    https           = 443
+    ssh             = 22
+    ephemeral_start = 1024
+    ephemeral_end   = 65535
+    db              = 3306
+  }
+}
+
+# NACL rules
+# ----------
+locals {
+  nacl_rules = {
+    # Public subnet NACL rules
+    public = {
+      ingress = [
+        { rule_no = 100, description = "Allow HTTP into the public subnet", protocol = "tcp", rule_action = "allow", cidr_block = "0.0.0.0/0", from_port = local.port.http, to_port = local.port.http },
+        { rule_no = 110, description = "Allow HTTPS into the public subnet", protocol = "tcp", rule_action = "allow", cidr_block = "0.0.0.0/0", from_port = local.port.https, to_port = local.port.https },
+        { rule_no = 120, description = "Allow SSH into public subnet", protocol = "tcp", rule_action = "allow", cidr_block = "0.0.0.0/0", from_port = local.port.ssh, to_port = local.port.ssh }
+      ]
+      egress = [
+        { rule_no = 100, description = "Allow all outbound", protocol = "-1", rule_action = "allow", cidr_block = var.main_cidr, from_port = 0, to_port = 0 }
+      ]
+    }
+    # Private subnets NACL rules
+    private = {
+      ingress = [
+        { rule_no = 100, description = "Allow HTTP from public subnet", protocol = "tcp", rule_action = "allow", cidr_block = var.public_subnets["main"].cidr, from_port = local.port.http, to_port = local.port.http },
+        { rule_no = 110, description = "Allow HTTPS from public subnet", protocol = "tcp", rule_action = "allow", cidr_block = var.public_subnets["main"].cidr, from_port = local.port.https, to_port = local.port.https },
+        { rule_no = 120, description = "Allow SSH from public subnet", protocol = "tcp", rule_action = "allow", cidr_block = var.public_subnets["main"].cidr, from_port = local.port.http, to_port = local.port.http }
+      ]
+      egress = [
+        { rule_no = 100, description = "Allow all outgoing traffic from private subnets", protocol = "-1", rule_action = "allow", cidr_block = var.main_cidr, from_port = 0, to_port = 0 }
+      ]
+    }
+  }
+}
 ```
+## security.tf
+```hcl
 # NACLs
 # -----
 resource "aws_network_acl" "nacl" {
@@ -68,7 +111,8 @@ resource "aws_network_acl_association" "private" {
   network_acl_id = aws_network_acl.nacl["private"].id
 }
 ```
+
 This Terraform code creates NACLs and their rules *dynamically*, using values derived from `locals.tf`, and then associates them (the NACLs) with correct subnets, building on information from previous configurations in `networking.tf`.  
-You might want to check out the `/terraform` folder to see how this all plays together!  
+
 
 Cheerio!

@@ -73,16 +73,125 @@ data "aws_ami" "ubuntu" {
   }
 }
 ```
-Note: If you want to check out the security groups configurations. Go through `/locals.tf` section: **security_groups{}**.   
-After that you can examine `/security.tf`   
-But anyway lets crack on.   
+
+## Security group(s)
+The `locals file` contains values that terraform uses as input in `/security.tf` for building SG's and their rules (and associations) dynamically. So it does all the heavy lifting for us.   
+
+### Locals
+```hcl
+# File: /terraform/locals.tf
+
+# Security groups
+# --------------
+locals {
+  security_groups = {
+    # Instance SG 
+    instance = {
+      ingress = [
+        { from_port = local.port.http, to_port = local.port.http, ip_protocol = "tcp", cidr_ipv4 = "0.0.0.0/0" },
+        { from_port = local.port.https, to_port = local.port.https, ip_protocol = "tcp", cidr_ipv4 = "0.0.0.0/0" }
+      ]
+      egress = [
+        { from_port = 0, to_port = 0, ip_protocol = "-1", cidr_ipv4 = "0.0.0.0/0" }
+      ]
+    }
+    # Admin SG to attach to an instance to enable ssh access
+    admin = {
+      ingress = [
+        { from_port = local.port.ssh, to_port = local.port.ssh, ip_protocol = "tcp", cidr_ipv4 = "0.0.0.0/0" }
+      ]
+      egress = [
+        { from_port = 0, to_port = 0, ip_protocol = "-1", cidr_ipv4 = "0.0.0.0/0" }
+      ]
+    }
+  }
+
+# ---- shortened for brevity (only including the relevant details for our spesific VM -----
+
+  # Flattening the SGs so that they can be used to dynamically create rules
+  # Pre-processing it like this simplifies:
+  #    resource creation, readability & maintainability
+  sg_rules_flattened = flatten([
+    for sg_name, sg_content in local.security_groups : [
+      for direction, rules in sg_content : [
+        for rule in rules : {
+          sg_name     = sg_name
+          direction   = direction
+          from_port   = rule.from_port
+          to_port     = rule.to_port
+          ip_protocol = rule.ip_protocol
+          cidr_ipv4   = rule.cidr_ipv4
+        }
+      ]
+    ]
+  ])
+}
+```
+### Security.tf
+```hcl
+# File: /terraform/security.tf
+
+# Security Groups
+# ---------------
+
+# Creating SGs dynamically. Input values stored in /locals.tf > security_groups{}
+resource "aws_security_group" "sg" {
+  for_each = local.security_groups
+
+  name        = "${each.key}-sg"
+  description = "Security group for ${each.key}"
+  vpc_id      = aws_vpc.main.id
+
+  tags = {
+    Name = "${each.key}-sg"
+  }
+}
+
+# Creating & attaching SG rules dynamically
+# -----------------------------------------
+
+# Ingress rules
+resource "aws_vpc_security_group_ingress_rule" "ingress_rule" {
+  # Check locals.tf for flattening of rules 
+  for_each = {
+    for rule in local.sg_rules_flattened : "${rule.sg_name}-${rule.direction}-${rule.from_port}" => rule
+    if rule.direction == "ingress"
+  }
+
+  security_group_id = aws_security_group.sg[each.value.sg_name].id
+  from_port         = each.value.from_port
+  to_port           = each.value.to_port
+  ip_protocol       = each.value.ip_protocol
+  cidr_ipv4         = each.value.cidr_ipv4
+  depends_on        = [aws_security_group.sg]
+}
+
+# Egress rules
+resource "aws_vpc_security_group_egress_rule" "egress_rule" {
+  # Check locals.tf for flattening of rules 
+  for_each = {
+    for rule in local.sg_rules_flattened : "${rule.sg_name}-${rule.direction}-${rule.from_port}" => rule
+    if rule.direction == "egress"
+  }
+
+  security_group_id = aws_security_group.sg[each.value.sg_name].id
+  # If all protocols are specified, you cannot declare ports -per AWS rules
+  from_port         = each.value.ip_protocol == "-1" ? null : each.value.from_port
+  to_port           = each.value.ip_protocol == "-1" ? null : each.value.to_port
+  ip_protocol       = each.value.ip_protocol
+  cidr_ipv4         = each.value.cidr_ipv4
+  depends_on        = [aws_security_group.sg]
+}
+```
+## Tags and IP
 
 Because of the following section in our public subnet configuration:
 ```
 map_public_ip_on_launch = true
 ```
-We don't have to manually configure a public IPv4-address, we simply assign the VM to the public subnet and we're good to go!   
-### As far as tagging goes:
+We don't have to manually configure a public IPv4-address, we simply assign the VM to the public subnet and we're good to go!    
+   
+**As far as tagging goes:**
 We have a default tags section in our `providers.tf` that looks like this:
 ```hcl
 provider "aws" {
@@ -97,9 +206,9 @@ provider "aws" {
   }
 }
 ```
-So this automatically applies tags to all created resources (except a few, like inatances in ASG)   
+So this automatically applies tags to all created resources (except a few, for example: instances in ASG)    
 
-#### Routing
+## Routing
 In order to have internet access from our subnets, we have to point all internet bound traffic to our internet-gw (if from private subnet, it has to go through the NAT gw first).  
 Building upon our previous network configurations:
 ```hcl
@@ -154,8 +263,13 @@ resource "aws_route_table_association" "private_subnet" {
 
 ## Logging in
 ```bash
-$ terraform apply
+$ terraform init
 ```
+
+```bash
+$ terraform -auto-apply
+```
+
 <img width="298" height="144" alt="Screenshot 2025-10-21 at 21 18 04" src="https://github.com/user-attachments/assets/37b3def8-8782-41f4-aa74-c855071444a7" /> <br>  
 Because of the output variables we have configured, we get the public ip to our instance, which we can then connect to!   
 First we want to make sure everything looks good.   

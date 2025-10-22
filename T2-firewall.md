@@ -3,7 +3,7 @@
 **Instructions from Pekka:**   
 Task goals:  
 - Public Subnet firewall: allow 22, 80, 443 from the Internet
-- Private Subnet firewall: allow 22, 80, 443 from Public Subnet   
+- Private Subnet firewall: allow 22, 80, 443 from Public Subnet
 
 ## locals.tf:
 ```hcl
@@ -112,7 +112,28 @@ resource "aws_network_acl_association" "private" {
 }
 ```
 
-This Terraform code creates NACLs and their rules *dynamically*, using values derived from `locals.tf`, and then associates them (the NACLs) with correct subnets, building on information from previous configurations in `networking.tf`.  
+```bash
+$ terraform init
+```
+```bash
+$ terrafrom apply -auto-approve
+```
 
+This Terraform code creates NACLs and their rules *dynamically*, using values derived from `locals.tf`, and then associates them (the NACLs) with correct subnets, building on information from previous configurations in `networking.tf`.     
 
-Cheerio!
+### ACLs
+<img width="1657" height="250" alt="Screenshot 2025-10-22 at 12 28 34" src="https://github.com/user-attachments/assets/1dc2093a-a3d9-4e98-b019-f4b8e57f78f0" />    
+
+### Private NACL
+<img width="1647" height="552" alt="Screenshot 2025-10-22 at 12 33 41" src="https://github.com/user-attachments/assets/cd00e2e2-057e-4035-a7f6-1ea7dab72ae9" /> <br>    
+<img width="1637" height="355" alt="Screenshot 2025-10-22 at 12 34 06" src="https://github.com/user-attachments/assets/9d4bc6ac-983c-4dc4-ab80-084839929778" /> <br>   
+<img width="308" height="229" alt="Screenshot 2025-10-22 at 12 37 07" src="https://github.com/user-attachments/assets/5582fb24-f807-41ee-97d4-ae99cef2ba3f" /> <br>   
+
+# Public NACL
+<img width="1646" height="555" alt="Screenshot 2025-10-22 at 12 34 40" src="https://github.com/user-attachments/assets/be0a7396-b28c-43d3-b2a2-857714c2f63b" /> <br>   
+<img width="1635" height="209" alt="Screenshot 2025-10-22 at 12 35 10" src="https://github.com/user-attachments/assets/5279e2e0-3803-4049-832d-2b983493bf26" /> <br>    
+<img width="319" height="223" alt="Screenshot 2025-10-22 at 12 36 37" src="https://github.com/user-attachments/assets/6fd736bd-be90-479e-989c-8a670536830e" /> <br>   
+   
+Everything seems to be working. 💯   
+We also created security groups, which we will illuminate more upon in the `VM` task!  
+Thank you for watching and till next time! 😄
